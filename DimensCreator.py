@@ -292,15 +292,15 @@ def process():
     projectDir = configParser.get("Dir", "ProjectDir")
     # 没有相应配置，返回
     if projectDir == None:
-        raise 'Unknown parameters'
+         raise RuntimeError('Unknown parameters')
     if not os.path.exists(projectDir):
-        raise 'Invalid parameters'
+         raise RuntimeError('Invalid parameters')
     # 判断工程是Eclipse还是Android Studio
     isEclipse = isEclipseProject(projectDir)
     isAndroidStudio = isAndroidStudioProject(projectDir)
     # 既不是Eclipse，也不是Android Studio
     if not isEclipse and not isAndroidStudio:
-        raise 'Unknown project type'
+         raise RuntimeError('Unknown project type')
     
     resDirectory = getResPath(isEclipse, projectDir)
     # 分别将配置文件中配置的全部配置，通用配置，竖版配置和横版配置转换到dict中
