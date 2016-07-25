@@ -6,6 +6,7 @@ import codecs
 import ConfigParser
 import xml.dom.minidom
 import shutil
+import sys
     
 def getNumberFromString(valueStr):
     digit = None
@@ -285,16 +286,6 @@ def replaceNewline(srcFile, destFile):
         destfp.close()
         
 def process():
-    configParser = getConfigParser()
-    if configParser == None:
-        return
-    # 获取配置文件中配置的项目目录
-    projectDir = configParser.get("Dir", "ProjectDir")
-    # 没有相应配置，返回
-    if projectDir == None:
-         raise RuntimeError('Unknown parameters')
-    if not os.path.exists(projectDir):
-         raise RuntimeError('Invalid parameters')
     # 判断工程是Eclipse还是Android Studio
     isEclipse = isEclipseProject(projectDir)
     isAndroidStudio = isAndroidStudioProject(projectDir)
@@ -303,12 +294,7 @@ def process():
          raise RuntimeError('Unknown project type')
     
     resDirectory = getResPath(isEclipse, projectDir)
-    # 分别将配置文件中配置的全部配置，通用配置，竖版配置和横版配置转换到dict中
-    AllConfig = convertConfigToDict(configParser, 'Dimens-All')
-    GeneralConfig = convertConfigToDict(configParser, 'Dimens-General')
-    PortConfig = convertConfigToDict(configParser, 'Dimens-Port')
-    LandConfig = convertConfigToDict(configParser, 'Dimens-Land')
-    
+
     # 对全部配置，需要转换普通版，横版和竖版
     if AllConfig != None and len(AllConfig) != 0:
         dimensDirctory = os.path.join(resDirectory, 'values')
@@ -332,4 +318,23 @@ def process():
         processDir(dimensDirctory, LandConfig)
 
 if  __name__ == '__main__':
+    configParser = getConfigParser()
+    if configParser == None:
+        raise RuntimeError('Get parser failed')
+    # 获取配置文件中配置的项目目录
+    if len(sys.argv) > 1:
+        projectDir = sys.argv[1]
+    else:
+        projectDir = configParser.get("Dir", "ProjectDir")
+    # 没有相应配置，返回
+    if projectDir is None:
+         raise RuntimeError('Unknown parameters')
+    if not os.path.exists(projectDir):
+         raise RuntimeError('Invalid parameters')
+    # 分别将配置文件中配置的全部配置，通用配置，竖版配置和横版配置转换到dict中
+    AllConfig = convertConfigToDict(configParser, 'Dimens-All')
+    GeneralConfig = convertConfigToDict(configParser, 'Dimens-General')
+    PortConfig = convertConfigToDict(configParser, 'Dimens-Port')
+    LandConfig = convertConfigToDict(configParser, 'Dimens-Land')
+    # 生成dimens
     process()
