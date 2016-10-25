@@ -209,13 +209,13 @@ def processDir(dimensDirctory, destinationDict):
                     # 遍历所有dimen节点
                     for item in dimenItems:
                         itemValue = item.firstChild.data
-                        # 如果节点数值单位不是dp也不是sp，继续下一个item
-                        if not itemValue.endswith(u'dp') and not itemValue.endswith(u'sp'):
+                        # 如果节点数值单位不是dp也不是sp和px，继续下一个item
+                        if not itemValue.endswith(u'dp') and not itemValue.endswith(u'sp') and not itemValue.endswith(u'px'):
                             continue
                         # 得到value对应的数值，可能是int，也可能是float
                         itemValueByNumber = getNumberFromString(itemValue[0:-2])
                         # value不是数值，继续下一个item
-                        if itemValueByNumber == None:
+                        if itemValueByNumber is None:
                             continue
                         # 将ratio乘以itemValueByNumber得到新的value值
                         if itemValue.endswith(u'dp'):
@@ -232,8 +232,8 @@ def processDir(dimensDirctory, destinationDict):
                         if item.getAttribute('type') != u'dimen':
                             continue
                         itemValue = item.firstChild.data
-                        # 如果节点数值单位不是dp也不是sp，继续下一个item
-                        if not itemValue.endswith(u'dp') and not itemValue.endswith(u'sp'):
+                        # 如果节点数值单位不是dp也不是sp和px，继续下一个item
+                        if not itemValue.endswith(u'dp') and not itemValue.endswith(u'sp') and not itemValue.endswith(u'px'):
                             continue
                         # 得到value对应的数值，可能是int，也可能是float
                         itemValueByNumber = getNumberFromString(itemValue[0:-2])
