@@ -72,25 +72,19 @@ def convertConfigToDict(config, section) :
             value.strip()
             splitValue = value.split(' ')
             dpValue = splitValue[0]
-            spValue = ''
-            for splitItem in splitValue[1:]:
-                if splitItem != '':
-                    spValue = splitItem
-                    break
+            spValue = splitValue[1]
+            pxValue = splitValue[2]
             dpRatio = getNumberFromString(dpValue)
-            # sp数值未配置，则表示sp数值和dp数值相等
-            if spValue == '':
-                spRatio = dpRatio
-            else:
-                spRatio = getNumberFromString(spValue)
+            spRatio = getNumberFromString(spValue)
+            pxRatio = getNumberFromString(pxValue)
             
             # ratio解析失败，则此条配置无效，继续下一条
-            if dpRatio == None or spRatio == None:
+            if dpRatio is None or spRatio is None or pxRatio is None:
                 continue
             # 缩放比例必须大于0
-            if dpRatio <= 0 or spRatio <= 0:
+            if dpRatio <= 0 or spRatio <= 0 or pxRatio <= 0:
                 continue
-            ratioKey = (dpRatio, spRatio)
+            ratioKey = (dpRatio, spRatio, pxRatio)
             # 如果dict中已经包含此条倍率，则将当期key直接添加到该倍率下
             if destDict.has_key(ratioKey):
                 destDict[ratioKey].append(key)
@@ -157,15 +151,15 @@ def getDestFile(srcFileName, destFolder):
             versionPart = splitItem
     
     newName = basePart
-    if dpiPart != None:
+    if dpiPart is not None:
         newName = newName + '-' + dpiPart
-    if swPart != None:
+    if swPart is not None:
         newName = newName + '-' + swPart
-    if sizePart != None:
+    if sizePart is not None:
         newName = newName + '-' + sizePart
-    if orientationPart != None:
+    if orientationPart is not None:
         newName = newName + '-' + orientationPart
-    if versionPart != None:
+    if versionPart is not None:
         newName = newName + '-' + versionPart
     
     destFileDirName = os.path.join(fileParent, newName)
@@ -194,7 +188,7 @@ def processDir(dimensDirctory, destinationDict):
         # 遍历dimensDirctory目录下所有包含dimen配置的文件
         for fileName in fileList:
             # 如果比例为1，不需要解析xml和计算，直接复制文件即可
-            if ratio[0] == 1 and ratio[1] == 1:
+            if ratio[0] == 1 and ratio[1] == 1 and ratio[2] == 1:
                 for dest in destFolders:
                     destFileName = getDestFile(fileName, dest)
                     shutil.copyfile(fileName, destFileName)
@@ -220,8 +214,12 @@ def processDir(dimensDirctory, destinationDict):
                         # 将ratio乘以itemValueByNumber得到新的value值
                         if itemValue.endswith(u'dp'):
                             newItemValue = getRatioNumber(itemValueByNumber, ratio[0])
-                        else:
+                        elif itemValue.endswith(u'sp'):
                             newItemValue = getRatioNumber(itemValueByNumber, ratio[1])
+                        elif itemValue.endswith(u'px'):
+                            newItemValue = getRatioNumber(itemValueByNumber, ratio[2])
+                        else:
+                            continue
                         item.firstChild.data = str(newItemValue) + itemValue[-2:]
                         
                     # 找出所有的item节点
@@ -238,14 +236,18 @@ def processDir(dimensDirctory, destinationDict):
                         # 得到value对应的数值，可能是int，也可能是float
                         itemValueByNumber = getNumberFromString(itemValue[0:-2])
                         # value不是数值，继续下一个item
-                        if itemValueByNumber == None:
+                        if itemValueByNumber is None:
                             continue
                         # 将ratio乘以itemValueByNumber得到新的value值
                         # 将ratio乘以itemValueByNumber得到新的value值
                         if itemValue.endswith(u'dp'):
                             newItemValue = getRatioNumber(itemValueByNumber, ratio[0])
-                        else:
+                        elif itemValue.endswith(u'sp'):
                             newItemValue = getRatioNumber(itemValueByNumber, ratio[1])
+                        elif itemValue.endswith(u'px'):
+                            newItemValue = getRatioNumber(itemValueByNumber, ratio[2])
+                        else:
+                            continue
                         item.firstChild.data = str(newItemValue) + itemValue[-3:-1]
                         
                     for dest in destFolders:
@@ -296,7 +298,7 @@ def process():
     resDirectory = getResPath(isEclipse, projectDir)
 
     # 对全部配置，需要转换普通版，横版和竖版
-    if AllConfig != None and len(AllConfig) != 0:
+    if AllConfig is not None and len(AllConfig) != 0:
         dimensDirctory = os.path.join(resDirectory, 'values')
         processDir(dimensDirctory, AllConfig)
         dimensDirctory = os.path.join(resDirectory, 'values-port')
@@ -305,15 +307,15 @@ def process():
         processDir(dimensDirctory, AllConfig)
         
     # 如果有普通配置，且配置项目个数不为0，则开始处理普通配置项
-    if GeneralConfig != None and len(GeneralConfig) != 0:
+    if GeneralConfig is not None and len(GeneralConfig) != 0:
         dimensDirctory = os.path.join(resDirectory, 'values')
         processDir(dimensDirctory, GeneralConfig)
     # 如果有竖版配置，且配置项目个数不为0，则开始处理竖版配置项
-    if PortConfig != None and len(PortConfig) != 0:
+    if PortConfig is not None and len(PortConfig) != 0:
         dimensDirctory = os.path.join(resDirectory, 'values-port')
         processDir(dimensDirctory, PortConfig)
     # 如果有横版配置，且配置项目个数不为0，则开始处理横版配置项
-    if LandConfig != None and len(LandConfig) != 0:
+    if LandConfig is not None and len(LandConfig) != 0:
         dimensDirctory = os.path.join(resDirectory, 'values-land')
         processDir(dimensDirctory, LandConfig)
 
